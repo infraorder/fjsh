@@ -11,95 +11,121 @@ const fjsh = new FJSH.App({
   },
 });
 
-class Gravity extends TICK.LinkedComponent {
-  force: FJSH.Vector
-  public constructor({ force = new FJSH.Vector() } = {} ) { 
+enum OscilatorMethod {
+  sin,
+  cos,
+}
+
+class Oscilator extends TICK.LinkedComponent {
+  
+  position: FJSH.Vector;
+  rotation: FJSH.Vector;
+  method: OscilatorMethod;
+
+  public constructor({  rotation = { x: 0, y: 0, z: 0 }, position = { x: 0, y: 0, z: 0 }, method = OscilatorMethod.sin } = {} ) { 
 
     super();
-    this.force = force;
+    this.position = position;
+    this.rotation = rotation;
+    this.method = method;
   }
 }
 
-class Box {
+class ComponentPrimative {
+
   position: FJSH.Vector;
   rotation: FJSH.Euler;
+}
+
+class Box extends ComponentPrimative {
+
+  initial: ComponentPrimative;
   id: number;
 
   public constructor({ position = new FJSH.Vector(),
     rotation = new FJSH.Euler(),
     id = 0 } = {}) {
 
+    super();
+
     this.position = position;
     this.rotation = rotation;
+    this.initial = new ComponentPrimative()
+    this.initial.position = { ...position };
+    this.initial.rotation = { ...rotation };
+    this.initial.rotation = { x: rotation.x, y: rotation.y, z: rotation.z, order: rotation.order };
+
     this.id = id;
   }
 }
 
-class GravitySystem extends TICK.IterativeSystem {
+class OscilatorSystem extends TICK.IterativeSystem {
   public constructor() {
-    super((entity) => entity.hasAll(Box, Gravity));
+    super((entity) => entity.hasAll(Box, Oscilator));
   }
 
   public updateEntity(entity: TICK.Entity, dt: number) {
-
-    const box = entity.get(Box)
-
-    // Let's update all regeneration components on our hero and apply their effects 
-    entity.iterate(Gravity, (gravity) => {
-      box.position.x += gravity.force.x;
-      box.position.y += gravity.force.y;
-      box.position.z += gravity.force.z;
-    });
-
-    const mesh = fjsh.scene.getObjectById(box.id)
-    mesh.position.add(new THREE.Vector3(box.position.x * dt, box.position.y * dt, box.position.z * dt))
-  }
-
-  protected entityAdded = ({current}: TICK.EntitySnapshot) => {
-    // When new entity appears in the queue, that means that it has Hero and Regeneration
-    // so we want to instantly heal the hero by existing Regeneration buffs
-    current.iterate(Gravity, (gravity) => {
-      this.instantlyApplyGravity(entity, gravity);
-    })
-    // Also, if any additional Regeneration buff will appear in the entity, we will handle 
-    // them as well and instantly heal the hero
-    current.onComponentAdded.connect(this.instantlyApplyGravity);
-  }
-
-  protected entityRemoved = ({current}: TICK.EntitySnapshot) => {
-    // We don't want to know if any new components were added to the entity when it left 
-    // the queue already.
-    current.onComponentAdded.disconnect(this.instantlyApplyGravity);
-  }
-
-  private instantlyApplyGravity = (entity: TICK.Entity, gravity: Gravity) => {
-    // We need to filter components, because this function will called on every added 
-    // component (not only Regeneration)
-    if (!(gravity instanceof Gravity)) return;
-
+    
     const box = entity.get(Box)!;
 
-    box.position.x += gravity.force.x;
-    box.position.y += gravity.force.y;
-    box.position.z += gravity.force.z;
-  }
+    const delta = {
+      position: {x:0,y:0,z:0},
+      rotation: {x:0,y:0,z:0},
+    }
 
+    entity.iterate(Oscilator, (oscilator: Oscilator) => {
+      
+      let oscilation = Math.sin;
+      if (oscilator.method == OscilatorMethod.cos) {
+
+        oscilation = Math.cos
+      }
+
+      delta.position.x += ((oscilation(dt) - 0.5) * oscilator.position.x);
+      delta.position.y += ((oscilation(dt) - 0.5) * oscilator.position.y);
+      delta.position.z += ((oscilation(dt) - 0.5) * oscilator.position.z);
+
+      delta.rotation.x += ((oscilation(dt) - 0.5) * oscilator.rotation.x) * Math.PI;
+      delta.rotation.y += ((oscilation(dt) - 0.5) * oscilator.rotation.y) * Math.PI;
+      delta.rotation.z += ((oscilation(dt) - 0.5) * oscilator.rotation.z) * Math.PI;
+    })
+
+    box.position.x = delta.position.x + box.initial.position.x;
+    box.position.y = delta.position.y + box.initial.position.y;
+    box.position.z = delta.position.z + box.initial.position.z;
+
+    box.rotation.x = delta.rotation.x + box.initial.rotation.x;
+    box.rotation.y = delta.rotation.y + box.initial.rotation.y;
+    box.rotation.z = delta.rotation.z + box.initial.rotation.z;
+  }
 }
 
 const orbitControls = new OrbitControls(fjsh.camera, fjsh.renderer.domElement)
 orbitControls.enableDamping = true
 
-const geometry = new THREE.BoxGeometry( 1, 1, 1 )
-const material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
-const box = new THREE.Mesh( geometry, material )
-fjsh.scene.add( box )
+const material = new THREE.MeshNormalMaterial();
+
+const boxGeometry = new THREE.BoxGeometry( 1, 1, 1 );
+const box = new THREE.Mesh( boxGeometry, material );
+fjsh.scene.add( box );
+
+const planeGeometry = new THREE.PlaneGeometry(2, 2);
+const plane = new THREE.Mesh( planeGeometry, material );
+plane.rotation.x = Math.PI * -0.5;
+plane.position.y = -2
+fjsh.scene.add( plane )
 
 const entity = new TICK.Entity()
-  .add(new Box({ id: box.id }))
-  .append(new Gravity({ force: { x: 0, y: -.1, z: 0 } }))
-  .append(new Gravity({ force: { x: 0, y: 0, z: -.1 } }))
+  .add(new Box({ id: box.id, position: box.position, rotation: box.rotation }))
+  .append(new Oscilator({ position: { x: 1, y: 0, z: 0 } }))
+  .append(new Oscilator({ position: { x: 0, y: -1, z: .5 }, rotation: { x: 1, y: -.2, z: 0 }, method: OscilatorMethod.cos }))
+
+const planeEntity = new TICK.Entity()
+  .add(new Box({ id: plane.id, position: plane.position, rotation: plane.rotation }))
+  .append(new Oscilator({ position: { x: 0, y: .5, z: 0 } }))
 
 fjsh.engine.addEntity(entity)
-fjsh.engine.addSystem(new GravitySystem())
+fjsh.engine.addEntity(planeEntity)
+fjsh.engine.addSystem(new OscilatorSystem())
 
 window.onload = () => fjsh.startup();

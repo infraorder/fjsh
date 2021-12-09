@@ -21,7 +21,7 @@ export class App {
       renderer = { antialias: true },
       camera = new OrthographicCamera({ frustumSize: 20, 
         aspect: window.innerWidth / window.innerHeight,
-        near: 0, 
+        near: -100, 
         far: 1000 }) } = {}) {
 
     this.scene = new THREE.Scene();
@@ -71,7 +71,7 @@ export class App {
     
     // this.engine.update();
     // this.world.step() // TODO - finish
-    this.engine.update(this.clock.getDelta())
+    this.engine.update(this.clock.getElapsedTime())
     this.renderer.render( this.scene, this.camera )
     window.requestAnimationFrame( this.tick )
   }
