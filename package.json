@@ -2,45 +2,77 @@
   "name": "fjsh",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "umd:main": "dist/umd/index.js",
+  "types": "dist/types/index.d.js",
   "scripts": {
-    "start": "webpack serve --open --config webpack.dev.js",
-    "build": "NODE_ENV=production webpack --config webpack.prod.js",
-    "test": "npx jest"
+    "postinstall": "husky install",
+    "prepublishOnly": "pinst --disable",
+    "postpublish": "pinst --enable",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:umd && npm run build:types",
+    "build:cjs": "node tools/cleanup cjs && tsc -p config/tsconfig.cjs.json",
+    "build:esm": "node tools/cleanup esm && tsc -p config/tsconfig.esm.json",
+    "build:umd": "node tools/cleanup umd && webpack --config config/webpack.config.js",
+    "build:types": "node tools/cleanup types && tsc -p config/tsconfig.types.json",
+    "clean": "node tools/cleanup",
+    "package": "npm run build && npm pack",
+    "test": "jest --no-cache --runInBand",
+    "test:cov": "jest --coverage --no-cache --runInBand",
+    "addscope": "node tools/packagejson name @tomchen/example-typescript-package"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "gamedev"
+  ],
+  "author": "Nathaniel McIntosh",
+  "license": "MIT",
+  "homepage": "https://github.com/infraorder/fjsh",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com/infraorder/fjsh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/infraorder/fjsh/issues"
+  },
+  "dependencies": {
+    "@types/animejs": "^3.1.4",
+    "@types/three": "^0.134.0",
+    "animejs": "^3.2.1",
+    "nanoid": "^3.1.30",
+    "three": "^0.134.0",
+    "tick-knock": "^4.0.2"
+  },
   "devDependencies": {
+    "@commitlint/cli": "^13.1.0",
+    "@commitlint/config-conventional": "^13.1.0",
     "@tweakpane/core": "^1.0.7",
+    "@types/jest": "^27.0.1",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
     "css-loader": "^6.5.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-webpack-plugin": "^3.1.1",
+    "husky": "^7.0.2",
     "jest": "^27.3.1",
     "mini-css-extract-plugin": "^2.4.5",
     "node-sass": "^6.0.1",
+    "pinst": "^2.1.6",
+    "prettier": "^2.4.0",
     "sass-loader": "^12.3.0",
     "style-loader": "^3.3.1",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
-    "typescript": "^4.5.2",
+    "typescript": "^4.4.3",
     "webpack": "^5.64.2",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.5.0"
-  },
-  "dependencies": {
-    "@javelin/ecs": "^1.0.0-alpha.13",
-    "@okikio/animate": "^2.3.1",
-    "@types/animejs": "^3.1.4",
-    "@types/three": "^0.134.0",
-    "animejs": "^3.2.1",
-    "clean-webpack-plugin": "^4.0.0",
-    "copy-webpack-plugin": "^10.0.0",
-    "fork-ts-checker-webpack-plugin": "^6.4.2",
-    "html-webpack-plugin": "^5.5.0",
-    "three": "^0.134.0",
-    "tick-knock": "^4.0.2",
-    "tweakpane": "^3.0.6"
   }
 }

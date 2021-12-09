@@ -14,7 +14,6 @@ export class App {
   // TODO - allow this to be persepctive too
   camera:     OrthographicCamera;
   clock:      THREE.Clock;
-  ambient:    THREE.AmbientLight;
   renderer:   THREE.WebGLRenderer;
   debug:      boolean;
 
