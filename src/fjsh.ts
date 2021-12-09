@@ -1,5 +1,8 @@
-import * as THREE from 'three'
-import * as TICK from 'tick-knock'
+import * as THREE from 'three';
+import * as TICK from 'tick-knock';
+import { AnimeParams, AnimeInstance } from 'animejs';
+import anime from 'animejs';
+import { nanoid } from 'nanoid'
 
 // FJSH {{{
 export class App {
@@ -176,10 +179,106 @@ export class OrthographicCamera extends THREE.OrthographicCamera {
     this.updateProjectionMatrix();
   }
 }
+
+export enum AnimationMethods {
+
+  sin,
+  cos,
+}
+
 // }}} ORTHOGRAPHICCAMERA
+// ANIMATIONEASINGS {{{
+export enum AnimationEasings {
+  linear = "linear",
+  easeInQuad = "easeInQuad",
+  easeInCubic = "easeInCubic",
+  easeInQuart = "easeInQuart",
+  easeInQuint = "easeInQuint",
+  easeInSine = "easeInSine",
+  easeInExpo = "easeInExpo",
+  easeInCirc = "easeInCirc",
+  easeInBack = "easeInBack",
+  easeInElastic = "easeInElastic",
+  easeInBounce = "easeInBounce",
+  easeOutQuad = "easeOutQuad",
+  easeOutCubic = "easeOutCubic",
+  easeOutQuart = "easeOutQuart",
+  easeOutQuint = "easeOutQuint",
+  easeOutSine = "easeOutSine",
+  easeOutExpo = "easeOutExpo",
+  easeOutCirc = "easeOutCirc",
+  easeOutBack = "easeOutBack",
+  easeOutElastic = "easeOutElastic",
+  easeOutBounce = "easeOutBounce",
+  easeInOutQuad = "easeInOutQuad",
+  easeInOutCubic = "easeInOutCubic",
+  easeInOutQuart = "easeInOutQuart",
+  easeInOutQuint = "easeInOutQuint",
+  easeInOutSine = "easeInOutSine",
+  easeInOutExpo = "easeInOutExpo",
+  easeInOutCirc = "easeInOutCirc",
+  easeInOutBack = "easeInOutBack",
+  easeInOutElastic = "easeInOutElastic",
+  easeInOutBounce = "easeInOutBounce"
+}
+// }}}
+// ANIMATIONCOMPONENT {{{
+export class Animation extends TICK.LinkedComponent {
+  
+  id = Util.genId();
+  options: AnimeParams;
+    
+  constructor(options: AnimeParams) {
+
+    super();
+    this.options = options;
+    this.options.autoplay = false;
+  }
+}
+// }}} ANIMATIONCOMPONENT
+// ANIMATIONSYSTEM {{{
+export class AnimationSystem extends TICK.IterativeSystem {
+  animations: Map<string, AnimeInstance>;
+
+  public constructor() {
+    super((entity) => entity.hasAll(Transform, Animation));
+    this.animations = new Map()
+  }
+
+  public updateEntity(entity: TICK.Entity) {
+
+    entity.iterate(Animation, (animation) => {
+
+      const anim = this.animations.get(animation.id)!;
+
+      anim.tick(Date.now()) // TODO - find a way to override tick... don't like the fact that this computes dt twice
+    })
+  }
+
+  protected entityAdded = ({current}: TICK.EntitySnapshot) => {
+
+    current.iterate(Animation, (animation) => {
+      
+      const transform = current.get(Transform)!;
+
+      animation.options.targets = transform.position
+      this.animations.set(animation.id, anime(animation.options))
+    })
+  }
+
+  protected entityRemoved = ({current}: TICK.EntitySnapshot) => {
+
+    current.iterate(Animation, (animation) => {
+
+      this.animations.delete(animation.id)
+    })
+  }
+}
+// }}} ANIMATIONSYSTEM
 // UTIL {{{
 export const Util = {
   range: (n: number) => Array.from({length: n}, (_v, k) => k),
   random: (scale = 2) => (0.5 - Math.random()) * scale,
+  genId: () => nanoid()
 }
 // }}} UTIL
