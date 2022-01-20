@@ -1,4 +1,4 @@
-import * as FJSH from '../src/index';
+import { FJSH } from '../src/index';
 import nanoid from 'nanoid'
 
 test('id', () => {
