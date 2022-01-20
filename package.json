@@ -1,6 +1,6 @@
 {
-  "name": "fjsh",
-  "version": "0.0.1",
+  "name": "@infraorder/fjsh",
+  "version": "0.0.4",
   "description": "",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",

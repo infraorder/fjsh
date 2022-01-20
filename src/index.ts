@@ -5,7 +5,7 @@ import anime from 'animejs';
 import { nanoid } from 'nanoid'
 
 // FJSH {{{
-export class App {
+class App {
 
   engine:     TICK.Engine;
 
@@ -80,7 +80,7 @@ export class App {
 }
 // }}} FJSH
 // VECTOR3 {{{
-export class Vector {
+class Vector {
 
   x: number;
   y: number;
@@ -95,7 +95,7 @@ export class Vector {
 }
 // }}} VECTOR3
 // VECTOR2 {{{
-export class Vector2 {
+class Vector2 {
 
   x: number;
   y: number;
@@ -108,7 +108,7 @@ export class Vector2 {
 }
 // }}} VECTOR2
 // VELOCITY2 {{{
-export class Velocity2 {
+class Velocity2 {
 
   x: number;
   y: number;
@@ -121,7 +121,7 @@ export class Velocity2 {
 }
 // }}} VELOCITY2
 // EULER {{{
-export class Euler {
+class Euler {
 
   x: number;
   y: number;
@@ -138,7 +138,7 @@ export class Euler {
 }
 // }}} EULER 
 // TRANSFORM {{{
-export class Transform extends TICK.LinkedComponent {
+class Transform extends TICK.LinkedComponent {
 
   position: Vector;
   rotation: Euler;
@@ -152,7 +152,7 @@ export class Transform extends TICK.LinkedComponent {
 }
 // }}} TRANSFORM
 // ORTHOGRAPHICCAMERA {{{
-export class OrthographicCamera extends THREE.OrthographicCamera {
+class OrthographicCamera extends THREE.OrthographicCamera {
 
   frustumSize: number;
 
@@ -179,7 +179,7 @@ export class OrthographicCamera extends THREE.OrthographicCamera {
   }
 }
 
-export enum AnimationMethods {
+enum AnimationMethods {
 
   sin,
   cos,
@@ -187,7 +187,7 @@ export enum AnimationMethods {
 
 // }}} ORTHOGRAPHICCAMERA
 // ANIMATIONEASINGS {{{
-export enum AnimationEasings {
+enum AnimationEasings {
   linear = "linear",
   easeInQuad = "easeInQuad",
   easeInCubic = "easeInCubic",
@@ -222,7 +222,7 @@ export enum AnimationEasings {
 }
 // }}}
 // ANIMATIONCOMPONENT {{{
-export class Animation extends TICK.LinkedComponent {
+class Animation extends TICK.LinkedComponent {
   
   id = Util.genId();
   options: AnimeParams;
@@ -236,7 +236,7 @@ export class Animation extends TICK.LinkedComponent {
 }
 // }}} ANIMATIONCOMPONENT
 // ANIMATIONSYSTEM {{{
-export class AnimationSystem extends TICK.IterativeSystem {
+class AnimationSystem extends TICK.IterativeSystem {
   animations: Map<string, AnimeInstance>;
 
   public constructor() {
@@ -275,9 +275,28 @@ export class AnimationSystem extends TICK.IterativeSystem {
 }
 // }}} ANIMATIONSYSTEM
 // UTIL {{{
-export const Util = {
+const Util = {
   range: (n: number) => Array.from({length: n}, (_v, k) => k),
   random: (scale = 2) => (0.5 - Math.random()) * scale,
   genId: () => nanoid()
 }
 // }}} UTIL
+
+const FJSH = {
+  App,
+  Vector2,
+  Vector,
+  Velocity2,
+  Euler,
+  Transform,
+  OrthographicCamera,
+  AnimationEasings,
+  Animation,
+  AnimationSystem,
+  Util,
+}
+
+export {
+  FJSH,
+  THREE
+}
