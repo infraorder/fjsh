@@ -14,7 +14,8 @@ class App {
   // TODO - allow this to be persepctive too
   camera:     OrthographicCamera;
   clock:      THREE.Clock;
-  renderer:   THREE.WebGLRenderer;
+  renderer:     THREE.WebGLRenderer;
+  renderTarget: THREE.WebGLRenderTarget;
   debug:      boolean;
 
   // CONSTRUCTOR {{{
@@ -24,7 +25,12 @@ class App {
       camera = new OrthographicCamera({ frustumSize: 20, 
         aspect: window.innerWidth / window.innerHeight,
         near: -100, 
-        far: 1000 }) } = {}) {
+        far: 1000 },
+      ),
+      renderTarget = {
+        width: 128,
+        height: 128,
+      }} = {}) {
 
     this.scene = new THREE.Scene();
     this.scene.background = sceneBackground;
@@ -34,6 +40,9 @@ class App {
     this.scene.add(camera);
 
     this.clock = new THREE.Clock();
+    
+    // this is used when you want to render fjsh to a renderTarget instead of to the screen
+    this.renderTarget = new THREE.WebGLRenderTarget( renderTarget.width, renderTarget.height );
 
     this.renderer = new THREE.WebGLRenderer( renderer );
     this.renderer.setPixelRatio( window.devicePixelRatio );
