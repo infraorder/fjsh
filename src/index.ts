@@ -298,5 +298,5 @@ const FJSH = {
 
 export {
   FJSH,
-  THREE
+  THREE,
 }
